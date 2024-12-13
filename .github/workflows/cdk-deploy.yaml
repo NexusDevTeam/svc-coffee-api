@@ -6,8 +6,6 @@ on:
       - main
       - dev
       - hom
-    paths-ignore:
-      - ".github/**"s
 
 jobs:
   runs-on: ubuntu-latest
