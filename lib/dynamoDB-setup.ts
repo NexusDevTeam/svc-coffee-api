@@ -1,5 +1,4 @@
-import { aws_dynamodb as dynamo, Stack, aws_ssm as ssm } from "aws-cdk-lib"
-import { ParameterTier } from "aws-cdk-lib/aws-ssm";
+import { aws_dynamodb as dynamo, Stack} from "aws-cdk-lib"
 
 export interface IDynamoDBSetup {
     setupDynamoDB(): void;
@@ -26,12 +25,6 @@ export class DynamoDBSetup implements IDynamoDBSetup {
                 type: dynamo.AttributeType.STRING,
             },
             billingMode: dynamo.BillingMode.PAY_PER_REQUEST,
-        });
-        
-        new ssm.StringParameter(this.stack, "CoffeeTableName", {
-            stringValue: this.dynamoCoffeeTable.tableName,
-            tier: ParameterTier.STANDARD,
-            parameterName: "/aws/coffeeApi/coffeeTableName",
         });
     }
     getDynamoDBTable(): dynamo.Table {
