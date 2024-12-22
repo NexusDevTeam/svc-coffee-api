@@ -4,6 +4,7 @@ import { Construct } from 'constructs';
 
 import { IDynamoDBSetup, DynamoDBSetup } from './dynamoDB-setup';
 import { ILambdaSetup, LambdaSetup } from './lambda-setup';
+import { IAppSyncSetup, AppSyncSetup } from './appsync-setup'
 
 export class SvcCoffeeApiStack extends cdk.Stack {
 
@@ -25,6 +26,9 @@ export class SvcCoffeeApiStack extends cdk.Stack {
     // Setup Lambda functions integrated with DynamoDB
     const lambdaSetup: ILambdaSetup = new LambdaSetup(this);
     lambdaSetup.setupLambda(dynamoDBSetup.getDynamoDBTable());
+
+    const appsyncSetup: IAppSyncSetup = new AppSyncSetup(this);
+    appsyncSetup.setupAppSync(lambdaSetup.getLambdaSetup());
 
     // Additional stack resources can be defined below
 
