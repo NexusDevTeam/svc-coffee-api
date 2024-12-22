@@ -8,17 +8,23 @@ export interface ILambdaSetup {
 }
 
 export class LambdaSetup implements ILambdaSetup {
-
     private lambdaFunctions: LambdaFunction[];
     private stack: Stack;
-
     public lambdaNames: string[];
 
+    /**
+     * Initializes a new instance of the LambdaSetup class.
+     * @param stack - The AWS CloudFormation stack where the Lambda functions will be deployed.
+     */
     constructor(stack: Stack) {
         this.stack = stack;
-        this.lambdaNames = []
+        this.lambdaNames = [];
     }
 
+    /**
+     * Sets up Lambda functions with provided configurations.
+     * @param coffeTable - The DynamoDB table that Lambda functions will interact with.
+     */
     setupLambda(coffeTable: dynamo.Table): void {
         this.lambdaNames.forEach((name: string) => {
             let config = {
@@ -31,17 +37,27 @@ export class LambdaSetup implements ILambdaSetup {
                 timeout: Duration.minutes(5),
                 code: lambda.Code.fromAsset(path.join(__dirname, "../app")),
                 role: this.setupLambdaRoles(name, coffeTable),
-            } as lambda.FunctionProps
+            } as lambda.FunctionProps;
 
             let functions = this.createdLambdaFunction(name, config);
             this.lambdaFunctions.push({name: name, lambda: functions});
         });
     }
 
+    /**
+     * Retrieves the list of created Lambda functions.
+     * @returns An array of LambdaFunction objects.
+     */
     getLambdaSetup(): LambdaFunction[] {
         return this.lambdaFunctions;
     }
 
+    /**
+     * Configures IAM roles for Lambda functions with necessary permissions.
+     * @param name - The name of the Lambda function.
+     * @param coffeTable - The DynamoDB table to grant access to.
+     * @returns An IAM Role with permissions to access DynamoDB and CloudWatch Logs.
+     */
     private setupLambdaRoles(name: string, coffeTable: dynamo.Table): iam.Role {
         let roles = new iam.Role(this.stack, `${name}LambdaRole`, {
             assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -49,9 +65,8 @@ export class LambdaSetup implements ILambdaSetup {
                 dynamoDBAAccess: new iam.PolicyDocument({
                     statements: [new iam.PolicyStatement({
                         actions: ["dynamodb:*"],
-                        resources: [coffeTable.tableArn], 
-                    }
-                    )]
+                        resources: [coffeTable.tableArn],
+                    })]
                 }),
                 logsAccess: new iam.PolicyDocument({
                     statements: [new iam.PolicyStatement({
@@ -62,11 +77,17 @@ export class LambdaSetup implements ILambdaSetup {
                 })
             },
             managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaBasicExecutionRole")]
-        })
+        });
 
         return roles;
     }
 
+    /**
+     * Creates a new AWS Lambda function with the specified configuration.
+     * @param name - The name of the Lambda function.
+     * @param config - The configuration properties for the Lambda function.
+     * @returns A newly created Lambda function.
+     */
     private createdLambdaFunction(name: string, config: lambda.FunctionProps): lambda.Function {
         return new lambda.Function(this.stack, `${name}ID`, config);
     }
