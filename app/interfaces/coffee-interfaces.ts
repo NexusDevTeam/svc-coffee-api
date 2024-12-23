@@ -21,5 +21,5 @@ export interface CoffeeInput{
 }
 
 export interface DynamoDBCoffeeItem extends DynamoDBItem{
-    data:Coffee
+    data: Coffee
 }
