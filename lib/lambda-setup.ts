@@ -18,7 +18,10 @@ export class LambdaSetup implements ILambdaSetup {
      */
     constructor(stack: Stack) {
         this.stack = stack;
-
+        this.lambdaNames = [
+            "createCoffee"
+        ];
+        this.lambdaFunctions = []
     }
 
     /**
@@ -26,9 +29,7 @@ export class LambdaSetup implements ILambdaSetup {
      * @param coffeTable - The DynamoDB table that Lambda functions will interact with.
      */
     setupLambda(coffeTable: dynamo.Table): void {
-        this.lambdaNames = [
-            "createCoffee"
-        ];
+
         this.lambdaNames.forEach((name: string) => {
             let config = {
                 handler: `/app/${name}.handler`,
