@@ -2,11 +2,11 @@ import { Logger } from "@aws-lambda-powertools/logger";
 import { CoffeeModel } from "../model/coffeeModel";
 import { ICoffeeDAO, CoffeeDAO } from "../repositories/cofffeeDao";
 
-interface ICoffeeManager {
+export interface ICoffeeManager {
     createCoffee(coffee: CoffeeModel): Promise<CoffeeModel>;
 }
 
-class CoffeeManager implements ICoffeeManager {
+export class CoffeeManager implements ICoffeeManager {
     
     private logger: Logger;
     private coffeeDAO: ICoffeeDAO;
