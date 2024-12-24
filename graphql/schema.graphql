@@ -18,6 +18,6 @@ input CoffeeInput{
     updatedAt: String;
 }
 
-mutation {
+type Mutation {
     createCoffee(coffee: CoffeeInput): Coffee
 } 
