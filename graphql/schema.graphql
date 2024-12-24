@@ -1,0 +1,23 @@
+type Coffee{
+    id: String;
+    name: String;
+    price: Float;
+    stock: Integer;
+    description: String;
+    createdAt: String;
+    updatedAt: String;
+}
+
+input CoffeeInput{
+    id: String;
+    name: String!;
+    price: Float;
+    stock: Integer;
+    description: String;
+    createdAt: String;
+    updatedAt: String;
+}
+
+mutation {
+    createCoffee(coffee: CoffeeInput): Coffee
+} 
