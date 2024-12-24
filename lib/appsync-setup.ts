@@ -31,7 +31,7 @@ export class AppSyncSetup implements IAppSyncSetup {
             },
         });
 
-        this.appsyncAPI = new appsync.CfnGraphQLApi(this.stack, "AppSyncAPI", {
+        this.appsyncAPI = new appsync.CfnGraphQLApi(this.stack, "CoffeeApi", {
             authenticationType: appsync.AuthorizationType.API_KEY,
             name: "CoffeeAPI",
             logConfig: {
