@@ -92,10 +92,12 @@ export class AppSyncSetup implements IAppSyncSetup {
                 apiId: this.appsyncAPI.attrApiId,
                 fieldName: name,
                 dataSourceName: dataSources.name,
-                typeName: name.startsWith("get") || name.startsWith("list") ? "Query" : "Mutation",
+                typeName: name.startsWith("get") || name.startsWith("list")
+                ? "Query"
+                : "Mutation",
                 requestMappingTemplate: appsync.MappingTemplate.lambdaRequest().renderTemplate(),
                 responseMappingTemplate: appsync.MappingTemplate.lambdaResult().renderTemplate(),
-            });
+            }).addDependency(dataSources);
         });
     }
 }

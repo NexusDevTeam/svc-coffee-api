@@ -1,23 +1,31 @@
-type Coffee{
-    id: String;
-    name: String;
-    price: Float;
-    stock: Integer;
-    description: String;
-    createdAt: String;
-    updatedAt: String;
+schema {
+  query: Query
+  mutation: Mutation
 }
 
-input CoffeeInput{
-    id: String;
-    name: String!;
-    price: Float;
-    stock: Integer;
-    description: String;
-    createdAt: String;
-    updatedAt: String;
+type Coffee {
+  id: String
+  name: String
+  price: Float
+  stock: Int
+  description: String
+  createdAt: String
+  updatedAt: String
+}
+
+input CoffeeInput {
+  id: String
+  name: String!
+  price: Float
+  stock: Int
+  description: String
+  createdAt: String
+  updatedAt: String
+}
+
+type Query {
 }
 
 type Mutation {
-    createCoffee(coffee: CoffeeInput): Coffee
-} 
+  createCoffee(coffee: CoffeeInput): Coffee
+}
