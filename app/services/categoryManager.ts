@@ -8,7 +8,7 @@ export interface ICategoryManager {
   createCategory(category: CategoryModel): Promise<CategoryModel>;
   listAllCategorys(): Promise<CategoryModel[]>;
   getCategoryById(id: string): Promise<CategoryModel | null>;
-  deleteCategoryById(id: string): Promise<void>;
+  deleteCategoryById(id: string): Promise<boolean>;
   updateCategory(category:CategoryModel):Promise<CategoryModel>;
 }
 
@@ -124,7 +124,7 @@ export class CategoryManager implements ICategoryManager {
    * @returns {Promise<void>} - A promise that resolves when the category is successfully deleted.
    * @throws {Error} - Throws an error if the deletion process fails.
    */
-  async deleteCategoryById(id: string): Promise<void> {
+  async deleteCategoryById(id: string): Promise<boolean> {
     try {
       return await this.categoryDAO.deleteCategoryById(id);
     } catch (error: any) {

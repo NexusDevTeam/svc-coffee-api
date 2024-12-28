@@ -9,7 +9,7 @@ export interface ICategoryDAO {
     createCategory(category: CategoryModel): Promise<CategoryModel>;
     listAllCategorys(): Promise<CategoryModel[]>;
     getCategoryById(id: string): Promise<CategoryModel | null>;
-    deleteCategoryById(id: string): Promise<void>;
+    deleteCategoryById(id: string): Promise<boolean>;
     updateCategory(category:CategoryModel):Promise<CategoryModel>;
 }
 
@@ -149,7 +149,7 @@ export class CategoryDAO implements ICategoryDAO {
      * @returns A promise that resolves when the category is successfully deleted.
      * @throws An error if the deletion process fails.
      */
-    async deleteCategoryById(id: string): Promise<void> {
+    async deleteCategoryById(id: string): Promise<boolean> {
         this.logger.info(`🔄 - Init process to delete category by ID: ${id}`);
         const command = new DeleteCommand({
             TableName: process.env.TABLE_NAME,
@@ -160,11 +160,16 @@ export class CategoryDAO implements ICategoryDAO {
         });
         try {
             this.logger.info(`🔄 - Send DeleteCommand: ${JSON.stringify(command)}`);
-            await this.ddb.send(command);
+            let result =  await this.ddb.send(command);
+            
+            if (result.$metadata.httpStatusCode !== 200) {
+                throw new Error(`❌ Error to delete a new coffee getted status code ${result.$metadata.httpStatusCode}`);
+            }
             this.logger.info(`✅ - Deleted category with ID: ${id}`);
+            return true
         } catch (error: any) {
             this.logger.error(`❌ - Error deleting category by ID, error: ${error.message}`);
-            throw new Error(`❌ - Error deleting category by ID, error: ${error.message}`);
+            return true
         }
     }
     /**

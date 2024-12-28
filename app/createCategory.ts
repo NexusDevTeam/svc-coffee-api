@@ -14,7 +14,7 @@ export async function handler(event: AppSyncEvent) {
     logger.info(`🎫 - Received event: ${JSON.stringify(event)}`);
 
     const { category } = event.arguments;
-    if (!category || !category.id) {
+    if (!category) {
         logger.error(`❌ - Error to create a new category, error: 400`);
         throw new Error(`❌ - Error to create a new category, error: 400`);
     }

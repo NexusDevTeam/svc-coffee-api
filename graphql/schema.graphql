@@ -50,6 +50,6 @@ type Mutation {
   updateCoffee(coffee: CoffeeInput, coffeeId: ID!): Coffee
   deleteCoffee(coffeeId: ID!): Boolean
   createCategory(category: CategoryInput): Category
-  updateCategory(category: CategoryInput, categoryId: ID!): Category
+  updateCategory(category: CategoryInput): Category
   deleteCategory(categoryId: ID!): Boolean
 }
