@@ -19,7 +19,11 @@ export class LambdaSetup implements ILambdaSetup {
     constructor(stack: Stack) {
         this.stack = stack;
         this.lambdaNames = [
-            "createCoffee"
+            "createCoffee",
+            // "updateCoffee",
+            // "getCoffeeById",
+            "listAllCoffees",
+            // "deleteCoffee",
         ];
         this.lambdaFunctions = []
     }

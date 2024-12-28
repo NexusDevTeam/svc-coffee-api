@@ -4,6 +4,7 @@ import { ICoffeeDAO, CoffeeDAO } from "../repositories/cofffeeDao";
 
 export interface ICoffeeManager {
     createCoffee(coffee: CoffeeModel): Promise<CoffeeModel>;
+    listAllCoffees(): Promise<CoffeeModel[]>
 }
 
 export class CoffeeManager implements ICoffeeManager {
@@ -29,6 +30,15 @@ export class CoffeeManager implements ICoffeeManager {
         } catch (error: any) {
             this.logger.error(`❌ - Error to create a new coffee, error: ${error.message}`);
             throw new Error(`❌ - Error to create a new coffee, error: ${error.message}`);
+        }
+    }
+
+    async listAllCoffees(): Promise<CoffeeModel[]> {
+        try {
+            return await this.coffeeDAO.listAllCoffees();
+        } catch (error: any) {
+            this.logger.error(`❌ - Error to retrieving coffees, error: ${error.message}`);
+            throw new Error(`❌ - Error to retrieving coffees, error: ${error.message}`);
         }
     }
 }

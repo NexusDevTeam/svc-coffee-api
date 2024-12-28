@@ -1,10 +1,13 @@
 import { Logger } from "@aws-lambda-powertools/logger";
 import { CoffeeModel } from "../model/coffeeModel";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBCoffeeItem } from "../interfaces/coffee-interfaces";
+import { Entitys } from "../enums/base-enum";
 
 export interface ICoffeeDAO {
     createCoffee(coffee: CoffeeModel): Promise<CoffeeModel>;
+    listAllCoffees(): Promise<CoffeeModel[]>;
 }
 
 export class CoffeeDAO implements ICoffeeDAO {
@@ -50,6 +53,35 @@ export class CoffeeDAO implements ICoffeeDAO {
         } catch (error: any) {
             this.logger.error(`❌ - Error to create a new coffee, error: ${error.message}`);
             throw new Error(`❌ - Error to create a new coffee, error: ${error.message}`);
+        }
+    }
+
+    async listAllCoffees(): Promise<CoffeeModel[]> {
+        this.logger.info(`🔄 - Init process to list all coffees from DynamoDB`);
+
+        const command = new QueryCommand({
+            TableName: process.env.TABLE_NAME,
+            KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
+            ExpressionAttributeValues: {
+                ":pk": Entitys.COFFEE,
+                ":sk": Entitys.COFFEE,
+            }
+        });
+
+        try {
+            this.logger.info(`🔄 - Send QueryCommand: ${JSON.stringify(command)}`);
+            const result = await this.ddb.send(command);
+
+            if (result.$metadata.httpStatusCode !== 200) {
+                throw new Error(`Error retrieving coffees, status code: ${result.$metadata.httpStatusCode}`);
+            }
+
+            const coffees = result.Items?.map(item => CoffeeModel.fromItem(item as unknown as DynamoDBCoffeeItem)) || [];
+            this.logger.info(`✅ - Retrieved ${coffees.length} coffees from DynamoDB`);
+            return coffees;
+        } catch (error: any) {
+            this.logger.error(`❌ - Error retrieving coffees, error: ${error.message}`);
+            throw new Error(`❌ - Error retrieving coffees, error: ${error.message}`);
         }
     }
 }
