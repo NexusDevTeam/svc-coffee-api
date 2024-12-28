@@ -23,13 +23,33 @@ input CoffeeInput {
   updatedAt: String
 }
 
+type Category{
+  id: String
+  name: String
+  description:String
+  createdAt: String
+  updatedAt: String
+}
+
+input CategoryInput{
+  id: String
+  name: String
+  description:String
+  createdAt: String
+  updatedAt: String
+}
 type Query {
   getCoffeeById(coffeeId: ID!): Coffee
   listAllCoffees: [Coffee]
+  getCategoryById(categoryId: ID!): Category
+  listAllCategorys: [Category]
 }
 
 type Mutation {
   createCoffee(coffee: CoffeeInput): Coffee
   updateCoffee(coffee: CoffeeInput, coffeeId: ID!): Coffee
   deleteCoffee(coffeeId: ID!): Boolean
+  createCategory(category: CategoryInput): Category
+  updateCategory(category: CategoryInput, categoryId: ID!): Category
+  deleteCategory(categoryId: ID!): Boolean
 }

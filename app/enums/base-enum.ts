@@ -1,3 +1,4 @@
 export enum Entitys{
-    COFFEE = "COFFEE"
+    COFFEE = "COFFEE",
+    CATEGORY = "CATEGORY",
 }

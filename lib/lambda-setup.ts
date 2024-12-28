@@ -24,6 +24,12 @@ export class LambdaSetup implements ILambdaSetup {
             "getCoffeeById",
             "listAllCoffees",
             // "deleteCoffee",
+            //Lambdas from entity
+            "createCategory",
+            "getCategoryById",
+            "deleteCategory",
+            "updateCategory",
+            "listAllCategorys",
         ];
         this.lambdaFunctions = []
     }
