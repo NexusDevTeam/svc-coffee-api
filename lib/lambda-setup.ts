@@ -23,7 +23,7 @@ export class LambdaSetup implements ILambdaSetup {
             // "updateCoffee",
             "getCoffeeById",
             "listAllCoffees",
-            // "deleteCoffee",
+            "deleteCoffee",
         ];
         this.lambdaFunctions = []
     }
