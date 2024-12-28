@@ -1,7 +1,6 @@
 import { Logger } from "@aws-lambda-powertools/logger";
 import { AppSyncEvent } from "./interfaces/base-interface";
 import { CoffeeManager, ICoffeeManager } from "./services/coffeeManager";
-import { CoffeeModel } from "./model/coffeeModel";
 
 const logger = new Logger({
     logLevel: "DEBUG",

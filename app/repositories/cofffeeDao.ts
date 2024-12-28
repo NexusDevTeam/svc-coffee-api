@@ -8,10 +8,11 @@ import { Entitys } from "../enums/base-enum";
 export interface ICoffeeDAO {
     createCoffee(coffee: CoffeeModel): Promise<CoffeeModel>;
     listAllCoffees(): Promise<CoffeeModel[]>;
+    getCoffeeById(id: string): Promise<CoffeeModel | null>;
 }
 
 export class CoffeeDAO implements ICoffeeDAO {
-    
+
     private logger: Logger;
     private ddbClient: DynamoDBClient;
     private ddb: DynamoDBDocumentClient;
@@ -43,13 +44,13 @@ export class CoffeeDAO implements ICoffeeDAO {
             this.logger.info(`🔄 - Send PutCommand: ${JSON.stringify(command)}`);
             const result = await this.ddb.send(command);
 
-            if(result.$metadata.httpStatusCode !== 200) {
+            if (result.$metadata.httpStatusCode !== 200) {
                 throw new Error(`Error to create a new coffee getted status code ${result.$metadata.httpStatusCode}`);
             }
 
             this.logger.info(`✅ - Created coffee in dynamoDB with Sucess`);
             return coffee;
-            
+
         } catch (error: any) {
             this.logger.error(`❌ - Error to create a new coffee, error: ${error.message}`);
             throw new Error(`❌ - Error to create a new coffee, error: ${error.message}`);
@@ -82,6 +83,36 @@ export class CoffeeDAO implements ICoffeeDAO {
         } catch (error: any) {
             this.logger.error(`❌ - Error retrieving coffees, error: ${error.message}`);
             throw new Error(`❌ - Error retrieving coffees, error: ${error.message}`);
+        }
+    }
+
+    async getCoffeeById(id: string): Promise<CoffeeModel | null> {
+        this.logger.info(`🔄 - Init process to get coffee by ID: ${id}`);
+
+        const command = new QueryCommand({
+            TableName: process.env.TABLE_NAME,
+            KeyConditionExpression: "PK = :pk AND begins_with(SK, :sk)",
+            ExpressionAttributeValues: {
+                ":pk": Entitys.COFFEE,
+                ":sk": `${Entitys.COFFEE}#${id}`,
+            }
+        });
+
+        try {
+            this.logger.info(`🔄 - Send QueryCommand: ${JSON.stringify(command)}`);
+
+            const result = await this.ddb.send(command);
+
+            if (result.$metadata.httpStatusCode !== 200) {
+                throw new Error(`Error retrieving coffee, status code: ${result.$metadata.httpStatusCode}`);
+            }
+
+            const coffee = result.Items ? CoffeeModel.fromItem(result.Items[0] as unknown as DynamoDBCoffeeItem) : null;
+            this.logger.info(`✅ - Retrieved coffee with ID: ${id}`);
+            return coffee;
+        } catch (error: any) {
+            this.logger.error(`❌ - Error retrieving coffee by ID, error: ${error.message}`);
+            throw new Error(`❌ - Error retrieving coffee by ID, error: ${error.message}`);
         }
     }
 }

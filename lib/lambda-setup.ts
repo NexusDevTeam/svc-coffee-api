@@ -21,7 +21,7 @@ export class LambdaSetup implements ILambdaSetup {
         this.lambdaNames = [
             "createCoffee",
             // "updateCoffee",
-            // "getCoffeeById",
+            "getCoffeeById",
             "listAllCoffees",
             // "deleteCoffee",
         ];

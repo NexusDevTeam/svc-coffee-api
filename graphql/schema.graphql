@@ -24,12 +24,12 @@ input CoffeeInput {
 }
 
 type Query {
-    getCoffeeById(id: ID!): Coffee
-    listAllCoffees: [Coffee]
+  getCoffeeById(coffeeId: ID!): Coffee
+  listAllCoffees: [Coffee]
 }
 
 type Mutation {
   createCoffee(coffee: CoffeeInput): Coffee
-  updateCoffee(coffee: CoffeeInput): Coffee
-  deleteCoffee(id: ID!): Boolean
+  updateCoffee(coffee: CoffeeInput, coffeeId: ID!): Coffee
+  deleteCoffee(coffeeId: ID!): Boolean
 }
