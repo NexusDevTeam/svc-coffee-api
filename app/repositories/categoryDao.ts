@@ -182,6 +182,7 @@ export class CategoryDAO implements ICategoryDAO {
      */
     async updateCategory(category:CategoryModel):Promise<CategoryModel>{
         this.logger.info(`🔄 - Init process to update category in dynamoDB, ${JSON.stringify(category)}`)
+        category.updatedAt = new Date().toISOString();
         const command = new PutCommand({
             TableName: process.env.TABLE_NAME,
             Item: category.toItem(),
