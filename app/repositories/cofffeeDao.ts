@@ -63,6 +63,8 @@ export class CoffeeDAO implements ICoffeeDAO {
     async updateCoffee(coffee: CoffeeModel, id: string): Promise<CoffeeModel> {
         this.logger.info(`🔄 - Init process to update coffee by ID: ${id}, ${JSON.stringify(coffee)}`,);
 
+        coffee.updatedAt = new Date().toISOString();
+
         const command = new PutCommand({
             TableName: process.env.TABLE_NAME,
             Item: coffee.toItem(),
