@@ -1,12 +1,14 @@
 import { Logger } from "@aws-lambda-powertools/logger";
 import { CoffeeModel } from "../model/coffeeModel";
-import { DynamoDBDocumentClient, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, QueryCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBCoffeeItem } from "../interfaces/coffee-interfaces";
 import { Entitys } from "../enums/base-enum";
 
 export interface ICoffeeDAO {
     createCoffee(coffee: CoffeeModel): Promise<CoffeeModel>;
+    updateCoffee(coffee: CoffeeModel, id: string): Promise<CoffeeModel>
+    deleteCoffee(id: string): Promise<Boolean>;
     listAllCoffees(): Promise<CoffeeModel[]>;
     getCoffeeById(id: string): Promise<CoffeeModel | null>;
 }
@@ -32,6 +34,8 @@ export class CoffeeDAO implements ICoffeeDAO {
         })
     }
 
+    // Mutations
+
     async createCoffee(coffee: CoffeeModel): Promise<CoffeeModel> {
         this.logger.info(`🔄 - Init process to create coffee in dynamoDB, ${JSON.stringify(coffee)}`);
 
@@ -50,12 +54,64 @@ export class CoffeeDAO implements ICoffeeDAO {
 
             this.logger.info(`✅ - Created coffee in dynamoDB with Sucess`);
             return coffee;
-
         } catch (error: any) {
             this.logger.error(`❌ - Error to create a new coffee, error: ${error.message}`);
             throw new Error(`❌ - Error to create a new coffee, error: ${error.message}`);
         }
     }
+
+    async updateCoffee(coffee: CoffeeModel, id: string): Promise<CoffeeModel> {
+        this.logger.info(`🔄 - Init process to update coffee by ID: ${id}, ${JSON.stringify(coffee)}`,);
+
+        const command = new PutCommand({
+            TableName: process.env.TABLE_NAME,
+            Item: coffee.toItem(),
+        });
+
+        try {
+            const result = await this.ddb.send(command);
+
+            if (result.$metadata.httpStatusCode !== 200) {
+                throw new Error(`Error to updated a coffee getted status code ${result.$metadata.httpStatusCode}`);
+            }
+
+            this.logger.info(`✅ - Updated coffee in dynamoDB with Sucess`);
+            return coffee;
+        } catch (error: any) {
+            this.logger.error(`❌ - Error to updated a coffee, error: ${error.message}`);
+            throw new Error(`❌ - Error to updated a coffee, error: ${error.message}`);
+        }
+    }
+
+    async deleteCoffee(id: string): Promise<Boolean> {
+        this.logger.info(`🔄 - Init process to delete coffee by ID: ${id}`);
+
+        const command = new DeleteCommand({
+            TableName: process.env.TABLE_NAME,
+            Key: {
+                PK: Entitys.COFFEE,
+                SK: `${Entitys.COFFEE}#${id}`,
+            }
+        });
+
+        try {
+            this.logger.info(`🔄 - Send DeleteCommand: ${JSON.stringify(command)}`);
+
+            const result = await this.ddb.send(command);
+
+            if (result.$metadata.httpStatusCode !== 200) {
+                throw new Error(`Error deleting coffee, status code: ${result.$metadata.httpStatusCode}`);
+            }
+
+            this.logger.info(`✅ - Deleted coffee with ID: ${id}`);
+            return true
+        } catch (error: any) {
+            this.logger.error(`❌ - Error deleting coffee by ID, error: ${error.message}`);
+            return false;
+        }
+    }
+
+    // Querys
 
     async listAllCoffees(): Promise<CoffeeModel[]> {
         this.logger.info(`🔄 - Init process to list all coffees from DynamoDB`);
