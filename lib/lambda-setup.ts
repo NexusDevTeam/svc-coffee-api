@@ -1,13 +1,9 @@
 import { Duration, aws_dynamodb as dynamo, aws_lambda as lambda, Stack, aws_iam as iam } from "aws-cdk-lib"
+import { aws_sns as sns } from "aws-cdk-lib";
 import { LambdaFunction } from "../types/types"
 import path from "path";
 
-export interface ILambdaSetup {
-    setupLambda(coffeTable: dynamo.Table): void,
-    getLambdaSetup(): LambdaFunction[],
-}
-
-export class LambdaSetup implements ILambdaSetup {
+export class LambdaSetup {
     private lambdaFunctions: LambdaFunction[];
     private stack: Stack;
     public lambdaNames: string[];
@@ -19,12 +15,14 @@ export class LambdaSetup implements ILambdaSetup {
     constructor(stack: Stack) {
         this.stack = stack;
         this.lambdaNames = [
+            //Lambdas from entity Coffee
             "createCoffee",
             "updateCoffee",
             "getCoffeeById",
             "listAllCoffees",
-            // "deleteCoffee",
-            //Lambdas from entity
+            "deleteCoffee",
+            "linkCoffeeToCategory",
+            //Lambdas from entity Categoty
             "createCategory",
             "getCategoryById",
             "deleteCategory",
@@ -38,7 +36,7 @@ export class LambdaSetup implements ILambdaSetup {
      * Sets up Lambda functions with provided configurations.
      * @param coffeTable - The DynamoDB table that Lambda functions will interact with.
      */
-    setupLambda(coffeTable: dynamo.Table): void {
+    setupLambda(coffeTable: dynamo.Table, snsTopic: sns.Topic): void {
 
         this.lambdaNames.forEach((name: string) => {
             let config = {
@@ -46,11 +44,12 @@ export class LambdaSetup implements ILambdaSetup {
                 runtime: lambda.Runtime.NODEJS_20_X,
                 environment: {
                     TABLE_NAME: coffeTable.tableName,
+                    SNS_TOPIC_ARN: snsTopic.topicArn,
                 },
                 functionName: `${name}Function`,
                 timeout: Duration.minutes(5),
                 code: lambda.Code.fromAsset(path.join(__dirname, "../app")),
-                role: this.setupLambdaRoles(name, coffeTable),
+                role: this.setupLambdaRoles(name, coffeTable, snsTopic),
             } as lambda.FunctionProps;
 
             let functions = this.createdLambdaFunction(name, config);
@@ -72,29 +71,54 @@ export class LambdaSetup implements ILambdaSetup {
      * @param coffeTable - The DynamoDB table to grant access to.
      * @returns An IAM Role with permissions to access DynamoDB and CloudWatch Logs.
      */
-    private setupLambdaRoles(name: string, coffeTable: dynamo.Table): iam.Role {
-        let roles = new iam.Role(this.stack, `${name}LambdaRole`, {
-            assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
-            inlinePolicies: {
-                dynamoDBAAccess: new iam.PolicyDocument({
-                    statements: [new iam.PolicyStatement({
+    private setupLambdaRoles(name: string, coffeeTable: dynamo.Table, snsTopic: sns.Topic): iam.Role {
+        const snsAccess = ["updateCoffee", "updateCategory"];
+    
+        const inlinePolicies: { [key: string]: iam.PolicyDocument } = {
+            dynamoDBAccess: new iam.PolicyDocument({
+                statements: [
+                    new iam.PolicyStatement({
                         actions: ["dynamodb:*"],
-                        resources: [coffeTable.tableArn],
-                    })]
-                }),
-                logsAccess: new iam.PolicyDocument({
-                    statements: [new iam.PolicyStatement({
+                        resources: [coffeeTable.tableArn],
+                    }),
+                ],
+            }),
+            logsAccess: new iam.PolicyDocument({
+                statements: [
+                    new iam.PolicyStatement({
                         effect: iam.Effect.ALLOW,
                         actions: ["logs:*"],
-                        resources: [`arn:aws:logs:${this.stack.region}:${this.stack.account}:log-group:/aws/lambda/${name}`]
-                    })]
-                })
-            },
-            managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaBasicExecutionRole")]
+                        resources: [
+                            `arn:aws:logs:${this.stack.region}:${this.stack.account}:log-group:/aws/lambda/${name}`,
+                        ],
+                    }),
+                ],
+            }),
+        };
+    
+        if (snsAccess.includes(name)) {
+            inlinePolicies.snsPublish = new iam.PolicyDocument({
+                statements: [
+                    new iam.PolicyStatement({
+                        effect: iam.Effect.ALLOW,
+                        actions: ["sns:Publish"],
+                        resources: [snsTopic.topicArn],
+                    }),
+                ],
+            });
+        }
+    
+        // Criar Role
+        const role = new iam.Role(this.stack, `${name}LambdaRole`, {
+            assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
+            inlinePolicies,
+            managedPolicies: [
+                iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaBasicExecutionRole"),
+            ],
         });
-
-        return roles;
-    }
+    
+        return role;
+    }    
 
     /**
      * Creates a new AWS Lambda function with the specified configuration.
