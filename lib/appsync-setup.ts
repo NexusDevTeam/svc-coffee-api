@@ -49,11 +49,11 @@ export class AppSyncSetup implements IAppSyncSetup {
             definition: graphqlSchema,
         });
 
-        // new ssm.StringParameter(this.stack, "CoffeeAPIUrl", {
-        //      parameterName: "/aws/appsync/coffeeAPIUrl",
-        //      stringValue: this.appsyncAPI.attrGraphQlUrl,
-        //      tier: ParameterTier.STANDARD,
-        // });
+        new ssm.StringParameter(this.stack, "CoffeeAPIUrl", {
+             parameterName: "/aws/appsync/coffeeAPIUrl",
+             stringValue: this.appsyncAPI.attrGraphQlUrl,
+             tier: ParameterTier.STANDARD,
+        });
 
         this.setupResolvers(lambdas);
     }

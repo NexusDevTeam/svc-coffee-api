@@ -5,6 +5,7 @@ import { Construct } from 'constructs';
 import { IDynamoDBSetup, DynamoDBSetup } from './dynamoDB-setup';
 import { ILambdaSetup, LambdaSetup } from './lambda-setup';
 import { IAppSyncSetup, AppSyncSetup } from './appsync-setup'
+import { ISNSSetup, SNSSetup } from './sns-setup';
 
 export class SvcCoffeeApiStack extends cdk.Stack {
 
@@ -19,13 +20,16 @@ export class SvcCoffeeApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    const snsSetup: ISNSSetup = new SNSSetup(this);
+    snsSetup.setupSNS(); 
+
     // Setup DynamoDB for the Coffee API
     const dynamoDBSetup: IDynamoDBSetup = new DynamoDBSetup(this);
     dynamoDBSetup.setupDynamoDB();
     
     // Setup Lambda functions integrated with DynamoDB
     const lambdaSetup: ILambdaSetup = new LambdaSetup(this);
-    lambdaSetup.setupLambda(dynamoDBSetup.getDynamoDBTable());
+    lambdaSetup.setupLambda(dynamoDBSetup.getDynamoDBTable(), snsSetup.getSNSTopic());
 
     const appsyncSetup: IAppSyncSetup = new AppSyncSetup(this);
     appsyncSetup.setupAppSync(lambdaSetup.getLambdaSetup());

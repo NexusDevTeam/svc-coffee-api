@@ -185,8 +185,8 @@ export class CoffeeDAO implements ICoffeeDAO {
         const command = new PutCommand({
             TableName: process.env.TABLE_NAME,
             Item: {
-                PK: `${Entitys.CATEGORY}#${categoryId}`,
-                SK: `${Entitys.COFFEE}#${coffeeId}`,
+                PK: `${Entitys.COFFEE}#${coffeeId}`,
+                SK: `${Entitys.CATEGORY}#${categoryId}`,
                 DATA: coffeeData ? coffeeData.toItem() : null,
             },
         });
@@ -217,7 +217,7 @@ export class CoffeeDAO implements ICoffeeDAO {
     
         const commands = new QueryCommand({
             TableName: process.env.TABLE_NAME,
-            KeyConditionExpression: "SK = :coffeeId",
+            KeyConditionExpression: "PK = :coffeeId",
             ExpressionAttributeValues: {
                 ":coffeeId": `${Entitys.COFFEE}#${coffeeId}`,
             },

@@ -2,6 +2,8 @@ import { Logger } from "@aws-lambda-powertools/logger";
 import { CoffeeModel } from "../model/coffeeModel";
 import { ICoffeeDAO, CoffeeDAO } from "../repositories/cofffeeDao";
 import { ICategoryDAO, CategoryDAO } from "../repositories/categoryDao";
+import { ISNSService, SnsCoffeeEventsStatus, SnsCoffeeEventsType, SNSService } from "./snsService";
+import { SNSClient } from "@aws-sdk/client-sns";
 
 export interface ICoffeeManager {
     createCoffee(coffee: CoffeeModel): Promise<CoffeeModel>;
@@ -16,14 +18,16 @@ export class CoffeeManager implements ICoffeeManager {
     private logger: Logger;
     private coffeeDAO: ICoffeeDAO;
     private categoryDAO: ICategoryDAO; 
+    private snsService?: ISNSService | undefined;
 
-    constructor() {
+    constructor(snsClient?: SNSClient) {
         this.logger = new Logger({
             logLevel: "DEBUG",
             serviceName: "CoffeeManager",
         });
         this.coffeeDAO = new CoffeeDAO();
         this.categoryDAO = new CategoryDAO();
+        this.snsService = snsClient ? new SNSService(snsClient) : undefined;
     }
 
     async createCoffee(coffee: CoffeeModel): Promise<CoffeeModel> {
@@ -41,7 +45,12 @@ export class CoffeeManager implements ICoffeeManager {
 
     async updateCoffee(coffee: CoffeeModel, id: string): Promise<CoffeeModel> {
         try {
-            return await this.coffeeDAO.updateCoffee(coffee, id);
+            const response = await this.coffeeDAO.updateCoffee(coffee, id);
+            let payload = this.snsService?.buildPayload(response.data, SnsCoffeeEventsType.COFFEE, SnsCoffeeEventsStatus.UPDATE);
+
+            await this.snsService?.publishSNS(process.env.SNS_TOPIC_ARN!, payload!);
+
+            return response;
         } catch (error: any) {
             this.logger.error(`❌ - Error to create a coffee, error: ${error.message}`);
             throw new Error(`❌ - Error to create a coffee, error: ${error.message}`);

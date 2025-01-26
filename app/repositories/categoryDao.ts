@@ -211,8 +211,8 @@ export class CategoryDAO implements ICategoryDAO {
         const commands = new PutCommand({
             TableName: process.env.TABLE_NAME,
             Item: {
-                PK: `${Entitys.COFFEE}#${coffeeId}`,
-                SK: `${Entitys.CATEGORY}#${categoryId}`,
+                PK: `${Entitys.CATEGORY}#${categoryId}`,
+                SK: `${Entitys.COFFEE}#${coffeeId}`,
                 DATA: categoryData ? categoryData.toItem() : null,
             },
         });
