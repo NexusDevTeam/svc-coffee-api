@@ -11,6 +11,7 @@ export interface ICategoryDAO {
     getCategoryById(id: string): Promise<CategoryModel | null>;
     deleteCategoryById(id: string): Promise<boolean>;
     updateCategory(category:CategoryModel):Promise<CategoryModel>;
+    linkCategoryToCoffee(categoryId: string, coffeeId: string): Promise<boolean | null>
 }
 
 export class CategoryDAO implements ICategoryDAO {
@@ -180,7 +181,7 @@ export class CategoryDAO implements ICategoryDAO {
      * @returns {Promise<CategoryModel>} - A promise that resolves to the updated CategoryModel.
      * @throws {Error} - Throws an error if the update operation fails.
      */
-    async updateCategory(category:CategoryModel):Promise<CategoryModel>{
+    async updateCategory(category: CategoryModel):Promise<CategoryModel>{
         this.logger.info(`🔄 - Init process to update category in dynamoDB, ${JSON.stringify(category)}`)
         category.updatedAt = new Date().toISOString();
         const command = new PutCommand({
@@ -194,10 +195,46 @@ export class CategoryDAO implements ICategoryDAO {
                 throw new Error(`❌ Error to update a new coffee getted status code ${result.$metadata.httpStatusCode}`);
             }
             this.logger.info(`✅ - Updated category in dynamoDB with Sucess`);
+                        
             return category;
         } catch (error: any) {
             this.logger.error(`❌ - Error to update a new coffee, error: ${error.message}`);
             throw new Error(`❌ - Error to update a new coffee, error: ${error.message}`);
+        }
+    }
+
+    async linkCategoryToCoffee(categoryId: string, coffeeId: string): Promise<boolean | null> {
+        this.logger.info(`🔄 - Init process to link category (${categoryId}) to coffee (${coffeeId}) in DynamoDB`);
+    
+        const categoryData = await this.getCategoryById(categoryId);
+    
+        const commands = new PutCommand({
+            TableName: process.env.TABLE_NAME,
+            Item: {
+                PK: `${Entitys.COFFEE}#${coffeeId}`,
+                SK: `${Entitys.CATEGORY}#${categoryId}`,
+                DATA: categoryData ? categoryData.toItem() : null,
+            },
+        });
+    
+        try {
+            this.logger.info(`🔄 - Sending PutCommands to DynamoDB`);
+    
+            const [categoryToCoffeeResult] = await Promise.all([
+                this.ddb.send(commands),
+            ]);
+    
+            if (categoryToCoffeeResult.$metadata.httpStatusCode !== 200) {
+                throw new Error(
+                    `Error linking category to coffee. Status codes: CategoryToCoffee - ${categoryToCoffeeResult.$metadata.httpStatusCode}`
+                );
+            }
+    
+            this.logger.info(`✅ - Successfully linked category (${categoryId}) to coffee (${coffeeId}) in DynamoDB`);
+            return true;
+        } catch (error: any) {
+            this.logger.error(`❌ - Error linking category (${categoryId}) to coffee (${coffeeId}), error: ${error.message}`);
+            throw new Error(`❌ - Error linking category to coffee, error: ${error.message}`);
         }
     }
 }

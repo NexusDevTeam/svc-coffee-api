@@ -38,6 +38,7 @@ input CategoryInput{
   createdAt: String
   updatedAt: String
 }
+
 type Query {
   getCoffeeById(coffeeId: ID!): Coffee
   listAllCoffees: [Coffee]
@@ -52,4 +53,5 @@ type Mutation {
   createCategory(category: CategoryInput): Category
   updateCategory(category: CategoryInput): Category
   deleteCategory(categoryId: ID!): Boolean
+  linkCoffeeToCategory(categoryId: ID!, coffeeId: ID!): Boolean
 }

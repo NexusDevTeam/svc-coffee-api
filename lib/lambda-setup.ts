@@ -19,17 +19,20 @@ export class LambdaSetup implements ILambdaSetup {
     constructor(stack: Stack) {
         this.stack = stack;
         this.lambdaNames = [
+            //Lambdas from entity Coffee
             "createCoffee",
             "updateCoffee",
             "getCoffeeById",
             "listAllCoffees",
-            // "deleteCoffee",
-            //Lambdas from entity
+            "deleteCoffee",
+            "linkCoffeeToCategory",
+            //Lambdas from entity Categoty
             "createCategory",
             "getCategoryById",
             "deleteCategory",
             "updateCategory",
             "listAllCategorys",
+            
         ];
         this.lambdaFunctions = []
     }

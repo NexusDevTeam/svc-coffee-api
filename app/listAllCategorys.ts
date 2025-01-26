@@ -4,7 +4,7 @@ import { CategoryManager, ICategoryManager } from "./services/categoryManager";
 
 const logger = new Logger({
     logLevel: "DEBUG",
-    serviceName: "listAllCategoryCategoryHandler",
+    serviceName: "listAllCategoryHandler",
 });
 
 const categoryManager: ICategoryManager = new CategoryManager();
