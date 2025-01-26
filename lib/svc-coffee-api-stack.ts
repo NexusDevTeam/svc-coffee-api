@@ -2,10 +2,10 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
-import { IDynamoDBSetup, DynamoDBSetup } from './dynamoDB-setup';
-import { ILambdaSetup, LambdaSetup } from './lambda-setup';
-import { IAppSyncSetup, AppSyncSetup } from './appsync-setup'
-import { ISNSSetup, SNSSetup } from './sns-setup';
+import {  DynamoDBSetup } from './dynamoDB-setup';
+import { LambdaSetup } from './lambda-setup';
+import { AppSyncSetup } from './appsync-setup'
+import { SNSSetup } from './sns-setup';
 
 export class SvcCoffeeApiStack extends cdk.Stack {
 
@@ -20,18 +20,18 @@ export class SvcCoffeeApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const snsSetup: ISNSSetup = new SNSSetup(this);
+    const snsSetup = new SNSSetup(this);
     snsSetup.setupSNS(); 
 
     // Setup DynamoDB for the Coffee API
-    const dynamoDBSetup: IDynamoDBSetup = new DynamoDBSetup(this);
+    const dynamoDBSetup = new DynamoDBSetup(this);
     dynamoDBSetup.setupDynamoDB();
     
     // Setup Lambda functions integrated with DynamoDB
-    const lambdaSetup: ILambdaSetup = new LambdaSetup(this);
+    const lambdaSetup = new LambdaSetup(this);
     lambdaSetup.setupLambda(dynamoDBSetup.getDynamoDBTable(), snsSetup.getSNSTopic());
 
-    const appsyncSetup: IAppSyncSetup = new AppSyncSetup(this);
+    const appsyncSetup = new AppSyncSetup(this);
     appsyncSetup.setupAppSync(lambdaSetup.getLambdaSetup());
 
     // Additional stack resources can be defined below

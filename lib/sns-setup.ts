@@ -20,11 +20,14 @@ export class SNSSetup {
             topicName: "CoffeeSNSTopic",
         });
 
-        new ssm.StringParameter(this.stack, "CoffeeSNSArn", {
-            parameterName: "/aws/sns/CoffeeSNSArn",
-            stringValue: this.snsTopic.topicArn,
-            tier: ParameterTier.STANDARD,
-        });
+        const apiEndpointParameter = new ssm.StringParameter(
+            this.stack,
+            "CoffeeSNSTopicArn",
+            {
+              parameterName: "/tucanto/sns/CoffeeSNSTopic",
+              stringValue: this.snsTopic.topicArn,
+            }
+          );
     }
 
     getSNSTopic(): sns.Topic {

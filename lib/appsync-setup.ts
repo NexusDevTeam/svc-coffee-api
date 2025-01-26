@@ -2,13 +2,8 @@ import { Stack, aws_appsync as appsync, aws_iam as iam, aws_ssm as ssm } from "a
 import * as fs from "fs" 
 import { LambdaFunction } from "../types/types";
 import path from "path";
-import { ParameterTier } from "aws-cdk-lib/aws-ssm";
 
-export interface IAppSyncSetup {
-    setupAppSync(lambdas: LambdaFunction[]): void;
-}
-
-export class AppSyncSetup implements IAppSyncSetup {
+export class AppSyncSetup {
 
     private stack: Stack;
     private appsyncAPI: appsync.CfnGraphQLApi; 
@@ -22,15 +17,22 @@ export class AppSyncSetup implements IAppSyncSetup {
             assumedBy: new iam.ServicePrincipal("appsync.amazonaws.com"),
             inlinePolicies: {
                 logsAccess: new iam.PolicyDocument({
-                    statements: [new iam.PolicyStatement({
-                        effect: iam.Effect.ALLOW,
-                        actions: ["logs:*"],
-                        resources: [`arn:aws:logs:*:*:*`]
-                    })]
-                })
+                    statements: [
+                        new iam.PolicyStatement({
+                            effect: iam.Effect.ALLOW,
+                            actions: ["logs:*"],
+                            resources: [`arn:aws:logs:*:*:*`],
+                        }),
+                        new iam.PolicyStatement({
+                            effect: iam.Effect.ALLOW,
+                            actions: ["ssm:PutParameter"],
+                            resources: [`arn:aws:ssm:*:*:parameter/aws/appsync/coffeeAPIUrl`],
+                        }),
+                    ],
+                }),
             },
         });
-
+        
         this.appsyncAPI = new appsync.CfnGraphQLApi(this.stack, "CoffeeApi", {
             authenticationType: appsync.AuthorizationType.API_KEY,
             name: "CoffeeAPI",
@@ -44,17 +46,20 @@ export class AppSyncSetup implements IAppSyncSetup {
             encoding: "utf-8",
         })
 
-        new appsync.CfnGraphQLSchema(this.stack, "CoffeeAPISchema", {
+        const apiUrlCfn =  new appsync.CfnGraphQLSchema(this.stack, "CoffeeAPISchema", {
             apiId: this.appsyncAPI.attrApiId,
             definition: graphqlSchema,
         });
+    // ---------- SSM Parameters ----------
 
-        new ssm.StringParameter(this.stack, "CoffeeAPIUrl", {
-             parameterName: "/aws/appsync/coffeeAPIUrl",
-             stringValue: this.appsyncAPI.attrGraphQlUrl,
-             tier: ParameterTier.STANDARD,
-        });
-
+    const apiEndpointParameter = new ssm.StringParameter(
+        this.stack,
+        "CoffeeApiUrl",
+        {
+          parameterName: "/tucanto/appsync/CoffeeApiUrl",
+          stringValue: this.appsyncAPI.attrGraphQlUrl,
+        }
+      );
         this.setupResolvers(lambdas);
     }
 

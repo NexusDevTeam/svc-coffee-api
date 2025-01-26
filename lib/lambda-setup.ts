@@ -3,12 +3,7 @@ import { aws_sns as sns } from "aws-cdk-lib";
 import { LambdaFunction } from "../types/types"
 import path from "path";
 
-export interface ILambdaSetup {
-    setupLambda(coffeTable: dynamo.Table, snsTopic: sns.Topic): void,
-    getLambdaSetup(): LambdaFunction[],
-}
-
-export class LambdaSetup implements ILambdaSetup {
+export class LambdaSetup {
     private lambdaFunctions: LambdaFunction[];
     private stack: Stack;
     public lambdaNames: string[];

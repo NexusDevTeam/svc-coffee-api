@@ -1,16 +1,13 @@
 import { aws_dynamodb as dynamo, Stack} from "aws-cdk-lib"
 
-export interface IDynamoDBSetup {
-    setupDynamoDB(): void;
-    getDynamoDBTable(): dynamo.Table; 
-}
+
 /**
  * Represents a setup for a DynamoDB table named "CoffeeTable".
  * This class handles the creation and retrieval of the DynamoDB table.
  * The table is set up with a primary key consisting of "PK" (string) and "SK" (string),
  * and utilizes the PAY_PER_REQUEST billing mode for cost-effectiveness.
  */
-export class DynamoDBSetup implements IDynamoDBSetup {
+export class DynamoDBSetup{
 
     private dynamoCoffeeTable: dynamo.Table;
     private stack: Stack;
